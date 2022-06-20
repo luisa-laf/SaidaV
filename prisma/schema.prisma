@@ -1,0 +1,82 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id         String   @id @default(uuid())
+  email      String   @unique
+  password   String
+  name       String
+  last_name  String?
+  adress     String?
+  phone      String?
+  permission String   @default("client")
+  order      Orders[]
+}
+
+model Orders {
+  id              String            @id @default(uuid())
+  value           Float             @default(0)
+  user            User              @relation(fields: [user_id], references: [id])
+  user_id         String
+  done            Boolean           @default(false)
+  created_at      DateTime          @default(now())
+  OrderedProducts OrderedProducts[]
+}
+
+model Product {
+  id              String            @id @default(uuid())
+  name            String
+  description     String            @default("")
+  image           String
+  value           Float             @default(0)
+  quantity        Quantity[]
+  OrderedProducts OrderedProducts[]
+  categories      ProductCategory[]
+}
+
+model OrderedProducts {
+  id         String  @id @default(uuid())
+  product    Product @relation(fields: [product_id], references: [id])
+  product_id String
+  order      Orders  @relation(fields: [order_id], references: [id])
+  order_id   String
+  quantity   Int     @default(0)
+  size       Size    @relation(fields: [size_id], references: [id])
+  size_id    Int
+}
+
+model Size {
+  id              Int               @id @default(autoincrement())
+  name            String            @unique
+  Quantity        Quantity[]
+  OrderedProducts OrderedProducts[]
+}
+
+model Quantity {
+  id         Int     @id @default(autoincrement())
+  size       Size    @relation(fields: [size_id], references: [id])
+  size_id    Int
+  quantity   Int     @default(0)
+  product    Product @relation(fields: [product_id], references: [id])
+  product_id String
+}
+
+model Category {
+  id      Int               @id @default(autoincrement())
+  name    String            @unique
+  product ProductCategory[]
+}
+
+model ProductCategory {
+  id          Int      @id @default(autoincrement())
+  category    Category @relation(fields: [category_id], references: [id])
+  product     Product  @relation(fields: [product_id], references: [id])
+  category_id Int
+  product_id  String
+}
